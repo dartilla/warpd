@@ -265,7 +265,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	next:
 		platform->mouse_get_position(&scr, &mx, &my);
 
-		if (!scroll_active() && (mx != prev_mx || my != prev_my))
+		if ((mx != prev_mx || my != prev_my))
 			redraw(scr, mx, my, !show_cursor);
 
 		prev_mx = mx;
