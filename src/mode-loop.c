@@ -1,5 +1,17 @@
 #include "warpd.h"
 
+static int oneshotRemoved = 0;
+
+int is_oneshot_removed()
+{
+	return oneshotRemoved;
+}
+
+void remove_oneshot_flag()
+{
+	oneshotRemoved = 1;
+}
+
 int mode_loop(int initial_mode, int oneshot, int record_history)
 {
 	int mode = initial_mode;
@@ -64,7 +76,7 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			break;
 		}
 
-		if (oneshot && (initial_mode != MODE_NORMAL || (btn = config_input_match(ev, "buttons")))) {
+		if (!oneshotRemoved && oneshot && (initial_mode != MODE_NORMAL || (btn = config_input_match(ev, "buttons")))) {
 			int x, y;
 			screen_t scr;
 

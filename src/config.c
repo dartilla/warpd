@@ -101,6 +101,7 @@ static struct {
 	{ "hint_border_radius", "3", "Border radius.", OPT_INT },
 
 	{ "hint_exit", "esc", "The exit key used for hint mode.", OPT_KEY },
+	{ "hint_normal", "C-q", "From hint mode to normal ignoring oneshot.", OPT_KEY },
 	{ "hint_undo", "backspace", "undo last selection step in one of the hint based modes.", OPT_KEY },
 	{ "hint_undo_all", "C-u", "undo all selection steps in one of the hint based modes.", OPT_KEY },
 
