@@ -34,6 +34,14 @@ void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
 	}
 }
 
+void draw_cursor_current(screen_t scr)
+{
+	int sw, sh, x, y;
+	platform->screen_get_dimensions(scr, &sw, &sh);
+	platform->mouse_get_position(&scr, &x, &y);
+	draw_cursor(scr, x, y, sw, sh, 0);
+}
+
 void draw_cursor(screen_t scr, int x, int y, int sw, int sh, int hide_cursor)
 {
 	const char *curcol = config_get("cursor_color");

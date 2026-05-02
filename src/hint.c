@@ -38,6 +38,7 @@ static void filter(screen_t scr, const char *s)
 
 	free(upper);
 	platform->screen_clear(scr);
+	draw_cursor_current(scr);
 	platform->hint_draw(scr, matched, nr_matched);
 	platform->commit();
 }
