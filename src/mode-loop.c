@@ -18,6 +18,9 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 	int rc = 0;
 	struct input_event *ev = NULL;
 
+	struct drag_action_holder dah = {0};
+	init_drag_action_holder(&dah);
+
 	while (1) {
 		int btn = 0;
 		config_input_whitelist(NULL, 0);
@@ -34,7 +37,7 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			hintspec_mode();
 			break;
 		case MODE_NORMAL:
-			ev = normal_mode(ev, oneshot);
+			ev = normal_mode(ev, oneshot, dah);
 
 			if (config_input_match(ev, "history"))
 				mode = MODE_HISTORY;

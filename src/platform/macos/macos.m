@@ -159,6 +159,9 @@ void osx_commit()
 	});
 }
 
+static void osx_press_modifier(uint8_t mod) { (void)mod; } // TODO
+static void osx_unpress_modifier(uint8_t mod) { (void)mod; } // TODO
+
 static void *mainloop(void *arg)
 {
 	int (*main)(struct platform *platform) = (int (*)(struct platform *platform)) arg;
@@ -186,6 +189,8 @@ static void *mainloop(void *arg)
 		.screen_list = osx_screen_list,
 		.scroll = osx_scroll,
 		.monitor_file = osx_monitor_file,
+		.press_modifier = osx_press_modifier,
+		.unpress_modifier = osx_unpress_modifier,
 	};
 
 	main(&platform);

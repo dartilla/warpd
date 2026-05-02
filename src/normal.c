@@ -6,6 +6,7 @@
 
 #include "warpd.h"
 
+
 void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
 				       int sh, const char *curcol, const int cursz)
 {
@@ -83,7 +84,19 @@ static void move(screen_t scr, int x, int y, int hide_cursor)
 	redraw(scr, x, y, hide_cursor);
 }
 
-struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
+static int join_static_keys_with_others(const char **keys, const char *static_keys[], size_t static_sz,
+		      const struct drag_action_holder *das)
+{
+	int nstatic = static_sz / sizeof static_keys[0];
+	int nkeys = 0;
+	for (int i = 0; i < nstatic; i++)
+		keys[nkeys++] = static_keys[i];
+	for (int i = 0; i < das->nr; i++)
+		keys[nkeys++] = das->drag_actions[i].trigger_cl;
+	return nkeys;
+}
+
+struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struct drag_action_holder dah)
 {
 	const int cursz = config_get_int("cursor_size");
 	const int system_cursor = config_get_int("normal_system_cursor");
@@ -102,7 +115,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	if (n == 1)
 		off_time = on_time;
 
-	const char *keys[] = {
+	const char *static_keys[] = {
 		"accelerator",
 		"bottom",
 		"buttons",
@@ -133,6 +146,10 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		"up",
 	};
 
+	const char *keys[sizeof static_keys / sizeof static_keys[0] + MAX_DRAG_ACTIONS];
+	int nkeys = join_static_keys_with_others(
+	    keys, static_keys, sizeof static_keys, &dah);
+
 	platform->input_grab_keyboard();
 
 	platform->mouse_get_position(&scr, &mx, &my);
@@ -148,7 +165,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	uint64_t time = 0;
 	uint64_t last_blink_update = 0;
 	while (1) {
-		config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
+		config_input_whitelist(keys, nkeys);
 		if (start_ev == NULL) {
 			ev = platform->input_next_event(10);
 			time += 10;
@@ -252,7 +269,9 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 				platform->mouse_down(config_get_int("drag_button"));
 			else
 				platform->mouse_up(config_get_int("drag_button"));
-		} else if (config_input_match(ev, "copy_and_exit")) {
+		} else {
+			if (!handle_drag_action(ev, &dah)) {
+		if (config_input_match(ev, "copy_and_exit")) {
 			platform->mouse_up(config_get_int("drag_button"));
 			platform->copy_selection();
 			ev = NULL;
@@ -299,7 +318,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 				goto exit;
 			}
-		}
+		}}}
 	next:
 		platform->mouse_get_position(&scr, &mx, &my);
 
@@ -316,6 +335,18 @@ exit:
 	platform->screen_clear(scr);
 
 	platform->input_ungrab_keyboard();
+	if (dragging) {
+		platform->mouse_up(config_get_int("drag_button"));
+	}
+	if (!config_input_match(ev, "history") &&
+	    !config_input_match(ev, "hint2") &&
+	    !config_input_match(ev, "hint_near_top_left") &&
+	    !config_input_match(ev, "hint_near_top_right") &&
+	    !config_input_match(ev, "hint_near_bottom_left") &&
+	    !config_input_match(ev, "hint_near_bottom_right") &&
+	    !config_input_match(ev, "hint")) {
+		stop_all_drag_actions(&dah);
+	}
 
 	platform->commit();
 	return ev;

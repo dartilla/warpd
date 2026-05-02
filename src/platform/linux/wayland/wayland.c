@@ -205,6 +205,9 @@ static void cleanup()
 	wl_display_flush(wl.dpy);
 }
 
+static void way_press_modifier(uint8_t mod) { (void)mod; } // TODO
+static void way_unpress_modifier(uint8_t mod) { (void)mod; } // TODO
+
 void wayland_init(struct platform *platform)
 {
 	way_init();
@@ -235,4 +238,6 @@ void wayland_init(struct platform *platform)
 	platform->screen_get_dimensions = way_screen_get_dimensions;
 	platform->screen_list = way_screen_list;
 	platform->scroll = way_scroll;
+	platform->press_modifier = way_press_modifier;
+	platform->unpress_modifier = way_unpress_modifier;
 }
