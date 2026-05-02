@@ -5,6 +5,7 @@
  */
 
 #include "warpd.h"
+#include "ctype.h"
 
 struct hint *hints;
 struct hint matched[MAX_HINTS];
@@ -18,12 +19,24 @@ static void filter(screen_t scr, const char *s)
 {
 	size_t i;
 
+	char *upper = NULL;
+	const char *key = s;
+
+	if (config_get_int("hint_chars_uppercase")) {
+		upper = strdup(s);
+		for (int j = 0; upper[j]; j++) {
+			upper[j] = toupper((unsigned char)upper[j]);
+		}
+		key = upper;
+	}
+
 	nr_matched = 0;
 	for (i = 0; i < nr_hints; i++) {
-		if (strstr(hints[i].label, s) == hints[i].label)
+		if (strstr(hints[i].label, key) == hints[i].label)
 			matched[nr_matched++] = hints[i];
 	}
 
+	free(upper);
 	platform->screen_clear(scr);
 	platform->hint_draw(scr, matched, nr_matched);
 	platform->commit();
@@ -81,8 +94,13 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 			hint->w = w;
 			hint->h = h;
 
-			hint->label[0] = chars[i];
-			hint->label[1] = chars[j];
+			if (config_get_int("hint_chars_uppercase")) {
+				hint->label[0] = toupper(chars[i]);
+				hint->label[1] = toupper(chars[j]);
+			} else {
+				hint->label[0] = chars[i];
+				hint->label[1] = chars[j];
+			}
 			hint->label[2] = 0;
 
 			y += rowgap + h;
@@ -314,6 +332,12 @@ int history_hint_mode()
 		hints[i].y = ents[i].y - h/2;
 
 		hints[i].label[0] = 'a'+i;
+		if (config_get_int("hint_chars_uppercase")) {
+			hints[i].label[0] = toupper('a'+i);
+		} else {
+			hints[i].label[0] = 'a'+i;
+		}
+
 		hints[i].label[1] = 0;
 	}
 
