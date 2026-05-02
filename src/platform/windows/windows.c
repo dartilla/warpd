@@ -441,6 +441,9 @@ static void commit()
 	wn_screen_redraw(scr);
 }
 
+static void press_modifier(uint8_t mod) { (void)mod; } // TODO
+static void unpress_modifier(uint8_t mod) { (void)mod; } // TODO
+
 void platform_run(int (*main)(struct platform *platform))
 {
 	SetWindowsHookEx(WH_KEYBOARD_LL, keyboardHook, GetModuleHandle(NULL), 0);
@@ -472,6 +475,8 @@ void platform_run(int (*main)(struct platform *platform))
 	platform.input_lookup_code = input_lookup_code;
 	platform.input_lookup_name = input_lookup_name;
 	platform.monitor_file = wn_monitor_file;
+	platform.press_modifier = press_modifier;
+	platform.unpress_modifier = unpress_modifier;
 
 	exit(main(&platform));
 }

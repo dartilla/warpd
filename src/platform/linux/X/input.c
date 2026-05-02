@@ -449,6 +449,32 @@ uint8_t x_input_lookup_code(const char *name, int *shifted)
 	return code;
 }
 
+static void do_modifier_event(uint8_t mod, Bool press)
+{
+	static const struct { uint8_t flag; KeySym sym; } map[] = {
+		{ PLATFORM_MOD_ALT,     XK_Alt_L },
+		{ PLATFORM_MOD_CONTROL, XK_Control_L },
+		{ PLATFORM_MOD_SHIFT,   XK_Shift_L },
+		{ PLATFORM_MOD_META,    XK_Super_L },
+	};
+	size_t i;
+	for (i = 0; i < sizeof map / sizeof map[0]; i++) {
+		if (mod & map[i].flag)
+			XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, map[i].sym), press, CurrentTime);
+	}
+	XSync(dpy, False);
+}
+
+void x_press_modifier(uint8_t mod)
+{
+	do_modifier_event(mod, True);
+}
+
+void x_unpress_modifier(uint8_t mod)
+{
+	do_modifier_event(mod, False);
+}
+
 const char *x_input_lookup_name(uint8_t code, int shifted)
 {
 	size_t i;
