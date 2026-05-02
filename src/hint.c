@@ -11,6 +11,7 @@ struct hint matched[MAX_HINTS];
 
 static size_t nr_hints;
 static size_t nr_matched;
+static int full_hint_mode_inner(int second_pass, int moveRight, int moveUp);
 
 char last_selected_hint[32];
 
@@ -45,7 +46,40 @@ static void get_hint_size(screen_t scr, int *w, int *h)
 	*h = (sh * config_get_int("hint_size")) / 1000;
 }
 
-static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
+void move_offsets(int *x_offset, int *y_offset, int moveRight, int moveUp)
+{
+	static int current_x_offset = -1;
+	static int current_y_offset = -1;
+
+	if (current_x_offset == -1) {
+		current_x_offset = *x_offset;
+	}
+	if (current_y_offset == -1) {
+		current_y_offset = *y_offset;
+	}
+
+	if (moveRight > 0) {
+		*x_offset = current_x_offset + *x_offset;
+	} else if (moveRight == 0) {
+		*x_offset = current_x_offset;
+	} else if (moveRight < 0) {
+		*x_offset = current_x_offset - *x_offset;
+	}
+
+	if (moveUp > 0) {
+		*y_offset = current_y_offset - *y_offset;
+	} else if (moveUp == 0) {
+		*y_offset = current_y_offset;
+	} else if (moveUp < 0) {
+		*y_offset = current_y_offset + *y_offset;
+	}
+
+	current_x_offset = *x_offset;
+	current_y_offset = *y_offset;
+}
+
+static size_t generate_fullscreen_hints_inner(screen_t scr, struct hint *hints,
+	int moveRight, int moveUp)
 {
 	int sw, sh;
 	int w, h;
@@ -63,8 +97,10 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 	const int colgap = sw / nc - w;
 	const int rowgap = sh / nr - h;
 
-	const int x_offset = (sw - nc * w - (nc - 1) * colgap) / 2;
-	const int y_offset = (sh - nr * h - (nr - 1) * rowgap) / 2;
+	int x_offset = (sw - nc * w - (nc - 1) * colgap) / 2;
+	int y_offset = (sh - nr * h - (nr - 1) * rowgap) / 2;
+
+	move_offsets(&x_offset, &y_offset, moveRight, moveUp);
 
 	int x = x_offset;
 	int y = y_offset;
@@ -95,6 +131,11 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 	return n;
 }
 
+static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
+{
+	return generate_fullscreen_hints_inner(scr, hints, 0, 0);
+}
+
 static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 {
 	hints = _hints;
@@ -112,6 +153,10 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		"hint_exit",
 		"hint_undo_all",
 		"hint_undo",
+		"hint_right",
+		"hint_left",
+		"hint_up",
+		"hint_down",
 	};
 
 	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
@@ -127,7 +172,23 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 		len = strlen(buf);
 
-		if (config_input_match(ev, "hint_exit")) {
+		if (config_input_match(ev, "hint_up")) {
+			full_hint_mode_inner(0, 0,1);
+			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_down")) {
+			full_hint_mode_inner(0, 0,-1);
+			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_left")) {
+			full_hint_mode_inner(0, -1,0);
+			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_right")) {
+			full_hint_mode_inner(0, 1,0);
+			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_exit")) {
 			rc = -1;
 			break;
 		} else if (config_input_match(ev, "hint_undo_all")) {
@@ -265,7 +326,7 @@ int hintspec_mode()
 	return hint_selection(scr, hints, n);
 }
 
-int full_hint_mode(int second_pass)
+int full_hint_mode_inner(int second_pass, int moveRight, int moveUp)
 {
 	int mx, my;
 	screen_t scr;
@@ -274,7 +335,7 @@ int full_hint_mode(int second_pass)
 	platform->mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
-	nr_hints = generate_fullscreen_hints(scr, hints);
+	nr_hints = generate_fullscreen_hints_inner(scr, hints, moveRight, moveUp);
 
 	if (hint_selection(scr, hints, nr_hints))
 		return -1;
@@ -283,6 +344,11 @@ int full_hint_mode(int second_pass)
 		return sift();
 	else
 		return 0;
+}
+
+int full_hint_mode(int second_pass)
+{
+	return full_hint_mode_inner(second_pass, 0, 0);
 }
 
 int history_hint_mode()
