@@ -100,6 +100,10 @@ void init_hints();
 void init_normal_mode();
 void init_grid_mode();
 
+void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
+				int sh, const char *curcol, const int cursz);
+void draw_cursor(screen_t scr, int x, int y, int sw, int sh, int hide_cursor);
+
 void config_input_whitelist(const char *names[], size_t n);
 
 const char *input_event_tostr(struct input_event *ev);

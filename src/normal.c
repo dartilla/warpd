@@ -6,6 +6,42 @@
 
 #include "warpd.h"
 
+void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
+				       int sh, const char *curcol, const int cursz)
+{
+	int crossLine = cursz * 5;
+	platform->screen_draw_box(scr, 0, y - cursz / 2,
+		crossLine, cursz, curcol);
+	platform->screen_draw_box(scr, sw - crossLine,
+		y - cursz / 2, crossLine, cursz, curcol);
+	platform->screen_draw_box(scr, x + 1,
+		0, cursz, crossLine, curcol);
+	platform->screen_draw_box(scr, x + 1,
+		sh - crossLine, cursz, crossLine, curcol);
+
+	if (x < crossLine || x > sw - crossLine ||
+		y < crossLine || y > sh - crossLine) {
+		const char *crossedColor = config_get("cursor_color_crossed");
+
+		platform->screen_draw_box(scr, x+1, y-cursz/2,
+			cursz, cursz, crossedColor);
+	}
+}
+
+void draw_cursor(screen_t scr, int x, int y, int sw, int sh, int hide_cursor)
+{
+	const char *curcol = config_get("cursor_color");
+	const int cursz = config_get_int("cursor_size");
+	if (!hide_cursor) {
+		platform->screen_draw_box(scr, x+1, y-cursz/2,
+				cursz, cursz, curcol);
+		if (config_get_int("normal_cursor_cross")) {
+			draw_cross_around_mouse_cursor(scr, x, y, sw, sh, curcol, cursz);
+		}
+	}
+}
+
+
 static void redraw(screen_t scr, int x, int y, int hide_cursor)
 {
 	int sw, sh;
@@ -15,17 +51,11 @@ static void redraw(screen_t scr, int x, int y, int hide_cursor)
 	const int gap = 10;
 	const int indicator_size = (config_get_int("indicator_size") * sh) / 1080;
 	const char *indicator_color = config_get("indicator_color");
-	const char *curcol = config_get("cursor_color");
 	const char *indicator = config_get("indicator");
-	const int cursz = config_get_int("cursor_size");
 
 	platform->screen_clear(scr);
 
-	if (!hide_cursor)
-		platform->screen_draw_box(scr, x+1, y-cursz/2,
-				cursz, cursz,
-				curcol);
-
+	draw_cursor(scr, x, y, sw, sh, hide_cursor);
 
 	if (!strcmp(indicator, "bottomleft"))
 		platform->screen_draw_box(scr, gap, sh-indicator_size-gap, indicator_size, indicator_size, indicator_color);
