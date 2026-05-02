@@ -6,6 +6,48 @@
 
 #include "warpd.h"
 
+void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
+				       int sh, const char *curcol, const int cursz)
+{
+	const int cross_line = cursz * 5;
+	const int left_width = x < cross_line ? x : cross_line;
+	platform->screen_draw_box(scr, 0, y - cursz / 2, left_width, cursz, curcol);
+
+	const int rightX = x > sw - cross_line ? x : sw - cross_line;
+	platform->screen_draw_box(scr, rightX, y - cursz / 2, cross_line, cursz, curcol);
+
+	const int top_height = y < cross_line ? y : cross_line;
+	platform->screen_draw_box(scr, x + 1, 0, cursz, top_height > 0 ? top_height : 1, curcol);
+
+	if (y > sh - cross_line) {
+		platform->screen_draw_box(scr, x + 1, y, cursz, sh - y, curcol);
+	} else {
+		platform->screen_draw_box(scr, x + 1, sh - cross_line, cursz, cross_line, curcol);
+	}
+
+	if (x < cross_line || x > sw - cross_line ||
+		y < cross_line || y > sh - cross_line) {
+		const char *crossed_color = config_get("cursor_color_crossed");
+
+		platform->screen_draw_box(scr, x+1, y-cursz/2,
+			cursz, cursz, crossed_color);
+	}
+}
+
+void draw_cursor(screen_t scr, int x, int y, int sw, int sh, int hide_cursor)
+{
+	const char *curcol = config_get("cursor_color");
+	const int cursz = config_get_int("cursor_size");
+	if (!hide_cursor) {
+		platform->screen_draw_box(scr, x+1, y-cursz/2,
+				cursz, cursz, curcol);
+		if (config_get_int("normal_cursor_cross")) {
+			draw_cross_around_mouse_cursor(scr, x, y, sw, sh, curcol, cursz);
+		}
+	}
+}
+
+
 static void redraw(screen_t scr, int x, int y, int hide_cursor)
 {
 	int sw, sh;
@@ -15,17 +57,11 @@ static void redraw(screen_t scr, int x, int y, int hide_cursor)
 	const int gap = 10;
 	const int indicator_size = (config_get_int("indicator_size") * sh) / 1080;
 	const char *indicator_color = config_get("indicator_color");
-	const char *curcol = config_get("cursor_color");
 	const char *indicator = config_get("indicator");
-	const int cursz = config_get_int("cursor_size");
 
 	platform->screen_clear(scr);
 
-	if (!hide_cursor)
-		platform->screen_draw_box(scr, x+1, y-cursz/2,
-				cursz, cursz,
-				curcol);
-
+	draw_cursor(scr, x, y, sw, sh, hide_cursor);
 
 	if (!strcmp(indicator, "bottomleft"))
 		platform->screen_draw_box(scr, gap, sh-indicator_size-gap, indicator_size, indicator_size, indicator_color);

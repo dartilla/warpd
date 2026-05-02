@@ -58,6 +58,7 @@ static struct {
 	{ "scroll_left", "i", "Scroll left key.", OPT_KEY },
 
 	{ "cursor_color", "#FF4500", "The color of the pointer in normal mode (rgba hex value).", OPT_STRING },
+	{ "cursor_color_crossed", "#000000", "The color of the pointer in normal mode while crossing (rgba hex value).", OPT_STRING },
 
 	{ "cursor_size", "7", "The height of the pointer in normal mode.", OPT_INT },
 	{ "repeat_interval", "20", "The number of milliseconds before repeating a movement event.", OPT_INT },
@@ -120,6 +121,7 @@ static struct {
 	{ "indicator_size", "12", "The size of the visual indicator in pixels.", OPT_INT },
 
 	{ "normal_system_cursor", "0", "If set to non-zero, use the system cursor instead of warpd's internal one.", OPT_INT },
+	{ "normal_cursor_cross", "0", "If set to non-zero, use draw cross around warpd's internal cursor.", OPT_INT },
 	{ "normal_blink_interval", "0", "If set to non-zero, the blink interval of the normal mode cursor in miliseconds. If two values are supplied, the first corresponds to the time the cursor is visible, and the second corresponds to the amount of time it is invisible", OPT_STRING },
 };
 
