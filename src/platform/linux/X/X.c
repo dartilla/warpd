@@ -231,4 +231,6 @@ void x_init(struct platform *platform)
 	platform->screen_get_dimensions = x_screen_get_dimensions;
 	platform->screen_list = x_screen_list;
 	platform->scroll = x_scroll;
+	platform->press_modifier = x_press_modifier;
+	platform->unpress_modifier = x_unpress_modifier;
 }

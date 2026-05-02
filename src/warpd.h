@@ -47,10 +47,13 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX_HIST_ENTS 16
+#define MAX_DRAG_ACTIONS 8
 
 #ifdef _MSC_VER
 	typedef int ssize_t;
 #endif
+
+#include "drag_action.h"
 
 enum {
 	MODE_RESERVED,
@@ -87,8 +90,8 @@ struct histfile_ent {
 	int y;
 };
 
-extern char last_selected_hint[32];
 
+extern char last_selected_hint[32];
 int is_oneshot_removed();
 void remove_oneshot_flag();
 int hintspec_mode();
@@ -96,7 +99,8 @@ int history_hint_mode();
 int full_hint_mode(int second_pass);
 void screen_selection_mode();
 struct input_event *grid_mode();
-struct input_event *normal_mode(struct input_event *start_ev, int oneshot);
+struct input_event *normal_mode(struct input_event *start_ev, int oneshot,
+	struct drag_action_holder *dah);
 
 void init_hints();
 void init_normal_mode();
@@ -156,4 +160,5 @@ int mode_loop(int initial_mode, int oneshot, int record_history);
 void daemon_loop(const char *config_path);
 
 extern struct platform *platform;
+uint8_t parse_modifiers(const char *s);
 #endif

@@ -10,6 +10,17 @@ struct config_entry *config = NULL;
 static struct {
 	char *key;
 	char *val;
+	const char *description;
+	enum option_type type;
+} drag_action_options[] = {
+	{ "drag_action", "", "Toggle drag action mode (mouse button pressed constantly) drag_action1..drag_action8 possible.", OPT_KEY },
+	{ "drag_action_button", "", "Mouse button used for to be pressed.", OPT_INT },
+	{ "drag_action_button_modifiers", "", "Modifier keys pressed to be pressed while dragging (A = Alt, C = Ctrl).", OPT_STRING },
+};
+
+static struct {
+	char *key;
+	char *val;
 
 	const char *description;
 	enum option_type type;
@@ -27,14 +38,13 @@ static struct {
 	/* Normal mode keys */
 
 	{ "exit", "esc", "Exit the currently active warpd session.", OPT_KEY },
-	{ "drag", "v", "Toggle drag mode (mnemonic (v)isual mode).", OPT_KEY },
+	{ "drag", "v", "Toggle drag (mouse key pressed and not released) mode.", OPT_KEY },
 	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v).", OPT_KEY },
 	{ "accelerator", "a", "Increase the acceleration of the pointer while held.", OPT_KEY },
 	{ "decelerator", "d", "Decrease the speed of the pointer while held.", OPT_KEY },
 	{ "buttons", "m , .",  "A space separated list of mouse buttons (2 is middle click).", OPT_BUTTON },
 	{ "drag_button", "1", "The mouse buttton used for dragging.", OPT_INT },
 	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click).", OPT_BUTTON },
-
 	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts).", OPT_KEY },
 	{ "history", ";", "Activate hint history mode while in normal mode.", OPT_KEY },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?).", OPT_KEY },
@@ -153,6 +163,19 @@ enum option_type get_option_type(const char *key)
 			return options[i].type;
 	}
 
+	/* Match drag_actionN, drag_actionN_button, drag_actionN_button_modifiers */
+	const size_t pfx = strlen("drag_action");
+	// '0' is the ASCII character for zero (value 48).
+	// character literals are integers, so '1' - '0' = 49 - 48 = 1 (digit as int)
+	int digit = key[pfx] - '0';
+	if (!strncmp(key, "drag_action", pfx) && digit >= 1 && digit <= MAX_DRAG_ACTIONS) {
+		// key is pointer to string, so we need to add pfx to get the correct offset
+		const char *suffix = key + pfx + 1; // key's suffix after digit
+		for (i = 0; i < sizeof(drag_action_options) / sizeof(drag_action_options[0]); i++) {
+			if (!strcmp(drag_action_options[i].key + pfx, suffix))
+				return drag_action_options[i].type;
+		}
+	}
 	return 0;
 }
 

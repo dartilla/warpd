@@ -87,6 +87,8 @@ struct input_event *x_input_next_event(int timeout);
 uint8_t x_input_lookup_code(const char *name, int *shifted);
 const char *x_input_lookup_name(uint8_t code, int shifted);
 struct input_event *x_input_wait(struct input_event *events, size_t sz);
+void x_press_modifier(uint8_t mod);
+void x_unpress_modifier(uint8_t mod);
 void x_mouse_move(screen_t scr, int x, int y);
 void x_mouse_down(int btn);
 void x_mouse_up(int btn);

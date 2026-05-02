@@ -89,6 +89,9 @@ struct platform {
 
 	void (*copy_selection)();
 
+	void (*press_modifier)(uint8_t mod);
+	void (*unpress_modifier)(uint8_t mod);
+
 	/*
 	* Draw operations may (or may not) be queued until this function
 	* is called.

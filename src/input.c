@@ -122,3 +122,19 @@ int input_eq(struct input_event *ev, const char *str)
 	else
 		return 2;
 }
+
+uint8_t parse_modifiers(const char *s)
+{
+	uint8_t mod = 0;
+	for (; *s; s++) {
+		switch (*s) {
+		case 'A': mod |= PLATFORM_MOD_ALT; break;
+		case 'C': mod |= PLATFORM_MOD_CONTROL; break;
+		case 'M': mod |= PLATFORM_MOD_META; break;
+		case 'S': mod |= PLATFORM_MOD_SHIFT; break;
+		case '-': break;
+		default: break;
+		}
+	}
+	return mod;
+}
