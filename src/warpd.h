@@ -104,6 +104,7 @@ void init_grid_mode();
 
 void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
 				int sh, const char *curcol, const int cursz);
+void draw_cursor_current(screen_t scr);
 void draw_cursor(screen_t scr, int x, int y, int sw, int sh, int hide_cursor);
 
 void config_input_whitelist(const char *names[], size_t n);
