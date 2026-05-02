@@ -89,6 +89,8 @@ struct histfile_ent {
 
 extern char last_selected_hint[32];
 
+int is_oneshot_removed();
+void remove_oneshot_flag();
 int hintspec_mode();
 int history_hint_mode();
 int full_hint_mode(int second_pass);

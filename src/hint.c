@@ -112,6 +112,7 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		"hint_exit",
 		"hint_undo_all",
 		"hint_undo",
+		"hint_normal"
 	};
 
 	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
@@ -129,6 +130,10 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 		if (config_input_match(ev, "hint_exit")) {
 			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_normal")) {
+			remove_oneshot_flag();
+			rc = 0;
 			break;
 		} else if (config_input_match(ev, "hint_undo_all")) {
 			buf[0] = 0;

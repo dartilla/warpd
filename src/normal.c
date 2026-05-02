@@ -263,7 +263,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			int btn;
 
 			if ((btn = config_input_match(ev, "buttons"))) {
-				if (oneshot) {
+				if (oneshot && !is_oneshot_removed()) {
 					printf("%d %d\n", mx, my);
 					exit(btn);
 				}
