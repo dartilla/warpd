@@ -49,6 +49,10 @@ static struct {
 	{ "history", ";", "Activate hint history mode while in normal mode.", OPT_KEY },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?).", OPT_KEY },
 	{ "hint2", "X", "Activate two pass hint mode.", OPT_KEY },
+	{ "hint_near_top_left", "A-h", "Activate hint near mode (topLeft).", OPT_KEY },
+	{ "hint_near_top_right", "A-l", "Activate hint near mode (topRight).", OPT_KEY },
+	{ "hint_near_bottom_left", "A-j", "Activate hint near mode (bottomLeft).", OPT_KEY },
+	{ "hint_near_bottom_right", "A-k", "Activate hint near mode (bottomRight).", OPT_KEY },
 	{ "grid", "g", "Activate (g)rid mode while in normal mode.", OPT_KEY },
 	{ "screen", "s", "Activate (s)creen selection while in normal mode.", OPT_KEY },
 
@@ -107,9 +111,14 @@ static struct {
 	{ "hint_chars", "abcdefghijklmnopqrstuvwxyz", "The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints.", OPT_STRING },
 	{ "hint_chars_uppercase", "0", "Show hint_chars in uppercase", OPT_STRING },
 	{ "hint_font", "Arial", "The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name.", OPT_STRING },
+	{ "hint_near_chars", "abcdefghijklmnopqrstuvwxyz", "The character set from which hints are generated for hint_near_cursor mode.", OPT_STRING },
+
 
 	{ "hint_size", "20", "Hint size (range: 1-1000)", OPT_INT },
 	{ "hint_border_radius", "3", "Border radius.", OPT_INT },
+	{ "hint_near_size", "17", "Hint size (range: 1-1000)", OPT_INT },
+	{ "hint_near_row_count", "3", "Hint row count", OPT_INT },
+	{ "hint_near_column_count", "7", "Hint column count", OPT_INT },
 
 	{ "hint_exit", "esc", "The exit key used for hint mode.", OPT_KEY },
 	{ "hint_normal", "C-q", "From hint mode to normal ignoring oneshot.", OPT_KEY },

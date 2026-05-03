@@ -61,10 +61,18 @@ enum {
 	MODE_HISTORY,
 	MODE_HINT,
 	MODE_HINT2,
+	MODE_HINT_NEAR,
 	MODE_GRID,
 	MODE_NORMAL,
 	MODE_HINTSPEC,
 	MODE_SCREEN_SELECTION,
+};
+
+enum near_mode {
+	TOP_LEFT,
+	TOP_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
 };
 
 enum option_type {
@@ -96,6 +104,7 @@ int is_oneshot_removed();
 void remove_oneshot_flag();
 int hintspec_mode();
 int history_hint_mode();
+int hint_near_cursor_mode(int mode);
 int full_hint_mode(int second_pass);
 void screen_selection_mode();
 struct input_event *grid_mode();

@@ -15,6 +15,7 @@ void remove_oneshot_flag()
 int mode_loop(int initial_mode, int oneshot, int record_history)
 {
 	int mode = initial_mode;
+	int nearMode = BOTTOM_RIGHT;
 	int rc = 0;
 	struct input_event *ev = NULL;
 
@@ -45,7 +46,19 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 				mode = MODE_HINT;
 			else if (config_input_match(ev, "hint2"))
 				mode = MODE_HINT2;
-			else if (config_input_match(ev, "grid"))
+			else if (config_input_match(ev, "hint_near_top_left")) {
+				mode = MODE_HINT_NEAR;
+				nearMode = TOP_LEFT;
+			} else if (config_input_match(ev, "hint_near_top_right")) {
+				mode = MODE_HINT_NEAR;
+				nearMode = TOP_RIGHT;
+			} else if (config_input_match(ev, "hint_near_bottom_left")) {
+				mode = MODE_HINT_NEAR;
+				nearMode = BOTTOM_LEFT;
+			} else if (config_input_match(ev, "hint_near_bottom_right")) {
+				mode = MODE_HINT_NEAR;
+				nearMode = BOTTOM_RIGHT;
+			} else if (config_input_match(ev, "grid"))
 				mode = MODE_GRID;
 			else if (config_input_match(ev, "screen"))
 				mode = MODE_SCREEN_SELECTION;
@@ -61,6 +74,13 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 		case MODE_HINT2:
 		case MODE_HINT:
 			if (full_hint_mode(mode == MODE_HINT2) < 0)
+				goto exit;
+
+			ev = NULL;
+			mode = MODE_NORMAL;
+			break;
+		case MODE_HINT_NEAR:
+			if (hint_near_cursor_mode(nearMode) < 0)
 				goto exit;
 
 			ev = NULL;
