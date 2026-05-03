@@ -43,7 +43,7 @@ static void filter(screen_t scr, const char *s)
 	platform->commit();
 }
 
-static void get_hint_size(screen_t scr, int *w, int *h)
+static void get_hint_size_by_key(screen_t scr, int *w, int *h, const char *hint_size_key)
 {
 	int sw, sh;
 
@@ -55,8 +55,92 @@ static void get_hint_size(screen_t scr, int *w, int *h)
 		sh = tmp;
 	}
 
-	*w = (sw * config_get_int("hint_size")) / 1000;
-	*h = (sh * config_get_int("hint_size")) / 1000;
+	*w = (sw * config_get_int(hint_size_key)) / 1000;
+	*h = (sh * config_get_int(hint_size_key)) / 1000;
+}
+
+static void get_hint_size(screen_t scr, int *w, int *h)
+{
+	return get_hint_size_by_key(scr, w, h, "hint_size");
+}
+
+static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints, int mode)
+{
+	int screen_width, screen_height, cursor_x, cursor_y;
+	int hint_width, hint_height;
+	int i, j;
+	size_t n = 0;
+
+	const char *chars = config_get("hint_near_chars");
+	get_hint_size_by_key(scr, &hint_width, &hint_height, "hint_near_size");
+	platform->screen_get_dimensions(scr, &screen_width, &screen_height);
+	platform->mouse_get_position(&scr, &cursor_x, &cursor_y);
+
+
+	const int nr = config_get_int("hint_near_row_count");
+	const int nc = config_get_int("hint_near_column_count");
+
+	const int colGap = hint_width / 4;
+	const int rowGap = hint_height / 4;
+
+	int x_offset = cursor_x - hint_width / 2;
+	int y_offset = cursor_y - hint_height / 2;
+
+	// mode == BOTTOM_RIGHT
+	int directionX = 1;
+	int directionY = 1;
+	if (mode == TOP_LEFT) {
+		directionY = -1;
+		directionX = -1;
+	} else if (mode == TOP_RIGHT) {
+		directionY = -1;
+		directionX = 1;
+	} else if (mode == BOTTOM_LEFT) {
+		directionY = 1;
+		directionX = -1;
+	}
+
+	int x = x_offset;
+	int y = y_offset;
+
+	int k = 0;
+	for (i = 0; i < nc; i++) {
+		for (j = 0; j < nr; j++) {
+			if (!(i == 0 && j == 0)) {
+				struct hint *hint = &hints[n++];
+
+				hint->x = x;
+				hint->y = y;
+
+				hint->w = hint_width;
+				hint->h = hint_height;
+
+				if (config_get_int("hint_chars_uppercase")) {
+					hint->label[0] = toupper(chars[k]);
+				} else {
+					hint->label[0] = chars[k];
+				}
+				hint->label[1] = 0;
+				hint->label[2] = 0;
+				k++;
+			}
+
+			if (directionY > 0) {
+				y += rowGap + hint_height;
+			} else {
+				y -= rowGap + hint_height;
+			}
+		}
+
+		y = y_offset;
+		if (directionX > 0) {
+			x += colGap + hint_width;
+		} else {
+			x -= colGap + hint_width;
+		}
+	}
+
+	return n;
 }
 
 static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
@@ -131,7 +215,11 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		"hint_exit",
 		"hint_undo_all",
 		"hint_undo",
-		"hint_normal"
+		"hint_normal",
+		"hint_near_top_left",
+		"hint_near_top_right",
+		"hint_near_bottom_left",
+		"hint_near_bottom_right"
 	};
 
 	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
@@ -149,6 +237,22 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 		if (config_input_match(ev, "hint_exit")) {
 			rc = -1;
+			break;
+		} else if (config_input_match(ev, "hint_near_top_left")) {
+			platform->screen_clear(scr);
+			rc = hint_near_cursor_mode(TOP_LEFT);
+			break;
+		} else if (config_input_match(ev, "hint_near_top_right")) {
+			platform->screen_clear(scr);
+			rc = hint_near_cursor_mode(TOP_RIGHT);
+			break;
+		} else if (config_input_match(ev, "hint_near_bottom_left")) {
+			platform->screen_clear(scr);
+			rc = hint_near_cursor_mode(BOTTOM_LEFT);
+			break;
+		} else if (config_input_match(ev, "hint_near_bottom_right")) {
+			platform->screen_clear(scr);
+			rc = hint_near_cursor_mode(BOTTOM_RIGHT);
 			break;
 		} else if (config_input_match(ev, "hint_normal")) {
 			remove_oneshot_flag();
@@ -307,6 +411,23 @@ int full_hint_mode(int second_pass)
 		return sift();
 	else
 		return 0;
+}
+
+int hint_near_cursor_mode(int mode)
+{
+	int mx, my;
+	screen_t scr;
+	struct hint hints[MAX_HINTS];
+
+	platform->mouse_get_position(&scr, &mx, &my);
+	hist_add(mx, my);
+
+	nr_hints = generate_hints_near_cursor(scr, hints, mode);
+
+	if (hint_selection(scr, hints, nr_hints))
+		return -1;
+
+	return 0;
 }
 
 int history_hint_mode()
