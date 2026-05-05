@@ -15,6 +15,12 @@ static size_t nr_matched;
 
 char last_selected_hint[32];
 
+int is_hint_overrides_cursor(struct hint hint, int x, int y)
+{
+	return hint.x < x && hint.x + hint.w > x
+		&& hint.y < y && hint.y + hint.h > y;
+}
+
 static void filter(screen_t scr, const char *s)
 {
 	size_t i;
@@ -31,9 +37,18 @@ static void filter(screen_t scr, const char *s)
 	}
 
 	nr_matched = 0;
+	int x, y;
+	platform->mouse_get_position(&scr, &x, &y);
 	for (i = 0; i < nr_hints; i++) {
-		if (strstr(hints[i].label, key) == hints[i].label)
-			matched[nr_matched++] = hints[i];
+		if (strstr(hints[i].label, key) == hints[i].label) {
+			if (config_get_int("hint_overriding_cursor_hide")) {
+				if (!is_hint_overrides_cursor(hints[i], x, y)) {
+					matched[nr_matched++] = hints[i];
+				}
+			} else {
+				matched[nr_matched++] = hints[i];
+			}
+		}
 	}
 
 	free(upper);
