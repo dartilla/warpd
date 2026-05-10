@@ -132,6 +132,8 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 		"hint_near_top_right",
 		"hint_near_bottom_left",
 		"hint_near_bottom_right",
+		"hint_near_vertical_up",
+		"hint_near_vertical_down",
 		"hist_back",
 		"hist_forward",
 		"history",
@@ -289,6 +291,8 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 			   config_input_match(ev, "hint_near_top_right") ||
 			   config_input_match(ev, "hint_near_bottom_left") ||
 			   config_input_match(ev, "hint_near_bottom_right") ||
+			   config_input_match(ev, "hint_near_vertical_up") ||
+			   config_input_match(ev, "hint_near_vertical_down") ||
 			   config_input_match(ev, "hint")) {
 			goto exit;
 		} else if (config_input_match(ev, "print")) {

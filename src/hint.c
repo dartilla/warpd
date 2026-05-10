@@ -79,7 +79,8 @@ static void get_hint_size(screen_t scr, int *w, int *h)
 	return get_hint_size_by_key(scr, w, h, "hint_size");
 }
 
-static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints, int mode)
+static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
+	int mode, const int row_count, const int column_count)
 {
 	int screen_width, screen_height, cursor_x, cursor_y;
 	int hint_width, hint_height;
@@ -92,13 +93,11 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints, int m
 	platform->mouse_get_position(&scr, &cursor_x, &cursor_y);
 
 
-	const int nr = config_get_int("hint_near_row_count");
-	const int nc = config_get_int("hint_near_column_count");
-
 	const int colGap = hint_width / 4;
 	const int rowGap = hint_height / 4;
+	const int cursor_size = config_get_int("cursor_size");
 
-	int x_offset = cursor_x - hint_width / 2;
+	int x_offset = cursor_x - hint_width / 2 + cursor_size / 2 + 2;
 	int y_offset = cursor_y - hint_height / 2;
 
 	// mode == BOTTOM_RIGHT
@@ -119,8 +118,8 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints, int m
 	int y = y_offset;
 
 	int k = 0;
-	for (i = 0; i < nc; i++) {
-		for (j = 0; j < nr; j++) {
+	for (i = 0; i < column_count; i++) {
+		for (j = 0; j < row_count; j++) {
 			if (!(i == 0 && j == 0)) {
 				struct hint *hint = &hints[n++];
 
@@ -234,7 +233,9 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		"hint_near_top_left",
 		"hint_near_top_right",
 		"hint_near_bottom_left",
-		"hint_near_bottom_right"
+		"hint_near_bottom_right",
+		"hint_near_vertical_up",
+		"hint_near_vertical_down"
 	};
 
 	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
@@ -268,6 +269,14 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		} else if (config_input_match(ev, "hint_near_bottom_right")) {
 			platform->screen_clear(scr);
 			rc = hint_near_cursor_mode(BOTTOM_RIGHT);
+			break;
+		} else if (config_input_match(ev, "hint_near_vertical_up")) {
+			platform->screen_clear(scr);
+			rc = hint_vertical_cursor_mode(TOP_LEFT);
+			break;
+		} else if (config_input_match(ev, "hint_near_vertical_down")) {
+			platform->screen_clear(scr);
+			rc = hint_vertical_cursor_mode(BOTTOM_LEFT);
 			break;
 		} else if (config_input_match(ev, "hint_normal")) {
 			remove_oneshot_flag();
@@ -437,7 +446,28 @@ int hint_near_cursor_mode(int mode)
 	platform->mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
-	nr_hints = generate_hints_near_cursor(scr, hints, mode);
+	const int row_count = config_get_int("hint_near_row_count");
+	const int column_count = config_get_int("hint_near_column_count");
+	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
+
+	if (hint_selection(scr, hints, nr_hints))
+		return -1;
+
+	return 0;
+}
+
+int hint_vertical_cursor_mode(int mode)
+{
+	int mx, my;
+	screen_t scr;
+	struct hint hints[MAX_HINTS];
+
+	platform->mouse_get_position(&scr, &mx, &my);
+	hist_add(mx, my);
+
+	const int row_count = config_get_int("hint_near_vertical_row_count");
+	const int column_count = 1;
+	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
 
 	if (hint_selection(scr, hints, nr_hints))
 		return -1;
