@@ -255,16 +255,18 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 			goto next;
 		}
 
+		int mp = config_get_int("movement_padding");
+
 		if (config_input_match(ev, "top"))
-			move(scr, mx, cursz / 2, !show_cursor);
+			move(scr, mx, (cursz / 2) + mp, !show_cursor);
 		else if (config_input_match(ev, "bottom"))
-			move(scr, mx, sh - cursz / 2, !show_cursor);
+			move(scr, mx, (sh - cursz / 2) - mp , !show_cursor);
 		else if (config_input_match(ev, "middle"))
 			move(scr, mx, sh / 2, !show_cursor);
 		else if (config_input_match(ev, "start"))
-			move(scr, 1, my, !show_cursor);
+			move(scr, 1 + mp, my, !show_cursor);
 		else if (config_input_match(ev, "end"))
-			move(scr, sw - cursz, my, !show_cursor);
+			move(scr, sw - cursz - mp, my, !show_cursor);
 		else if (config_input_match(ev, "hist_back")) {
 			hist_add(mx, my);
 			hist_prev();
