@@ -235,7 +235,9 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		"hint_near_bottom_left",
 		"hint_near_bottom_right",
 		"hint_near_vertical_up",
-		"hint_near_vertical_down"
+		"hint_near_vertical_down",
+		"hint_near_horizon_left",
+		"hint_near_horizon_right"
 	};
 
 	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
@@ -277,6 +279,14 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		} else if (config_input_match(ev, "hint_near_vertical_down")) {
 			platform->screen_clear(scr);
 			rc = hint_vertical_cursor_mode(BOTTOM_LEFT);
+			break;
+		} else if (config_input_match(ev, "hint_near_horizon_left")) {
+			platform->screen_clear(scr);
+			rc = hint_horizon_cursor_mode(TOP_LEFT);
+			break;
+		} else if (config_input_match(ev, "hint_near_horizon_right")) {
+			platform->screen_clear(scr);
+			rc = hint_horizon_cursor_mode(TOP_RIGHT);
 			break;
 		} else if (config_input_match(ev, "hint_normal")) {
 			remove_oneshot_flag();
@@ -448,6 +458,25 @@ int hint_near_cursor_mode(int mode)
 
 	const int row_count = config_get_int("hint_near_row_count");
 	const int column_count = config_get_int("hint_near_column_count");
+	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
+
+	if (hint_selection(scr, hints, nr_hints))
+		return -1;
+
+	return 0;
+}
+
+int hint_horizon_cursor_mode(int mode)
+{
+	int mx, my;
+	screen_t scr;
+	struct hint hints[MAX_HINTS];
+
+	platform->mouse_get_position(&scr, &mx, &my);
+	hist_add(mx, my);
+
+	const int column_count = config_get_int("hint_near_horizon_column_count");
+	const int row_count = 1;
 	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
 
 	if (hint_selection(scr, hints, nr_hints))
