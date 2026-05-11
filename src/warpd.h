@@ -148,6 +148,7 @@ void init_mouse();
 const char *get_config_path(const char *file);
 const char *get_data_path(const char *file);
 void parse_config(const char *path);
+int config_is_key_exist(const char *key);
 const char *config_get(const char *key);
 int config_get_int(const char *key);
 void config_print_options();

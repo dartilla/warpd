@@ -44,7 +44,7 @@ void draw_cursor_current(screen_t scr)
 
 void draw_cursor(screen_t scr, int x, int y, int sw, int sh, int hide_cursor)
 {
-	const char *curcol = config_get("cursor_color");
+	const char *curcol = active_drag_cursor_color ? active_drag_cursor_color : config_get("cursor_color");
 	const int cursz = config_get_int("cursor_size");
 	if (!hide_cursor) {
 		platform->screen_draw_box(scr, x+1, y-cursz/2,
