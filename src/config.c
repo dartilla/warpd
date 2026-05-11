@@ -68,6 +68,7 @@ static struct {
 	{ "bottom", "L", "Moves the cursor to the bottom of the screen in normal mode.", OPT_KEY },
 	{ "start", "0", "Moves the cursor to the leftmost corner of the screen in normal mode.", OPT_KEY },
 	{ "end", "$", "Moves the cursor to the rightmost corner of the screen in normal mode.", OPT_KEY },
+	{ "movement_padding", "100", "Padding for movement (left means leftmost but padding, etc)", OPT_INT },
 
 	{ "scroll_down", "e", "Scroll down key.", OPT_KEY },
 	{ "scroll_up", "r", "Scroll up key.", OPT_KEY },
