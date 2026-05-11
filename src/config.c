@@ -16,6 +16,7 @@ static struct {
 	{ "drag_action", "", "Toggle drag action mode (mouse button pressed constantly) drag_action1..drag_action8 possible.", OPT_KEY },
 	{ "drag_action_button", "", "Mouse button used for to be pressed.", OPT_INT },
 	{ "drag_action_button_modifiers", "", "Modifier keys pressed to be pressed while dragging (A = Alt, C = Ctrl).", OPT_STRING },
+	{ "drag_action_cursor_color", "#00ff00", "Cursor color while dragging", OPT_STRING },
 };
 
 static struct {
@@ -135,7 +136,19 @@ static struct {
 	{ "normal_system_cursor", "0", "If set to non-zero, use the system cursor instead of warpd's internal one.", OPT_INT },
 	{ "normal_cursor_cross", "0", "If set to non-zero, use draw cross around warpd's internal cursor.", OPT_INT },
 	{ "normal_blink_interval", "0", "If set to non-zero, the blink interval of the normal mode cursor in miliseconds. If two values are supplied, the first corresponds to the time the cursor is visible, and the second corresponds to the amount of time it is invisible", OPT_STRING },
+	{ "drag_action_cursor_color", "#00ff00", "Drag action cursor color by default", OPT_STRING }
 };
+
+int config_is_key_exist(const char *key)
+{
+	struct config_entry *ent;
+
+	for (ent = config; ent; ent = ent->next)
+		if (!strcmp(ent->key, key))
+			return 1;
+
+	return 0;
+}
 
 const char *config_get(const char *key)
 {
