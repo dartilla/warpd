@@ -447,7 +447,7 @@ int full_hint_mode(int second_pass)
 		return 0;
 }
 
-int hint_near_cursor_mode(int mode)
+int hint_near_cursor_mode_full(int mode, int row_count, int column_count)
 {
 	int mx, my;
 	screen_t scr;
@@ -456,52 +456,31 @@ int hint_near_cursor_mode(int mode)
 	platform->mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
-	const int row_count = config_get_int("hint_near_row_count");
-	const int column_count = config_get_int("hint_near_column_count");
 	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
 
 	if (hint_selection(scr, hints, nr_hints))
 		return -1;
 
 	return 0;
+}
+
+int hint_near_cursor_mode(int mode)
+{
+	return hint_near_cursor_mode_full(mode,
+		config_get_int("hint_near_row_count"),
+		config_get_int("hint_near_column_count"));
 }
 
 int hint_horizon_cursor_mode(int mode)
 {
-	int mx, my;
-	screen_t scr;
-	struct hint hints[MAX_HINTS];
-
-	platform->mouse_get_position(&scr, &mx, &my);
-	hist_add(mx, my);
-
-	const int column_count = config_get_int("hint_near_horizon_column_count");
-	const int row_count = 1;
-	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
-
-	if (hint_selection(scr, hints, nr_hints))
-		return -1;
-
-	return 0;
+	return hint_near_cursor_mode_full(mode, 1,
+		config_get_int("hint_near_horizon_column_count"));
 }
 
 int hint_vertical_cursor_mode(int mode)
 {
-	int mx, my;
-	screen_t scr;
-	struct hint hints[MAX_HINTS];
-
-	platform->mouse_get_position(&scr, &mx, &my);
-	hist_add(mx, my);
-
-	const int row_count = config_get_int("hint_near_vertical_row_count");
-	const int column_count = 1;
-	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
-
-	if (hint_selection(scr, hints, nr_hints))
-		return -1;
-
-	return 0;
+	return hint_near_cursor_mode_full(mode,
+		config_get_int("hint_near_vertical_row_count"), 1);
 }
 
 int history_hint_mode()
