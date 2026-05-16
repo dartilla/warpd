@@ -64,6 +64,12 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			} else if (config_input_match(ev, "hint_near_vertical_down")) {
 				mode = MODE_HINT_VERTICAL;
 				nearMode = BOTTOM_LEFT; // it could be BOTTOM_LEFT
+			} else if (config_input_match(ev, "hint_near_horizon_left")) {
+				mode = MODE_HINT_HORIZON;
+				nearMode = TOP_LEFT; // it could be BOTTOM_LEFT
+			} else if (config_input_match(ev, "hint_near_horizon_right")) {
+				mode = MODE_HINT_HORIZON;
+				nearMode = TOP_RIGHT; // it could be BOTTOM_RIGHT
 			} else if (config_input_match(ev, "grid"))
 				mode = MODE_GRID;
 			else if (config_input_match(ev, "screen"))
@@ -94,6 +100,13 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			break;
 		case MODE_HINT_VERTICAL:
 			if (hint_vertical_cursor_mode(nearMode) < 0)
+				goto exit;
+
+			ev = NULL;
+			mode = MODE_NORMAL;
+			break;
+		case MODE_HINT_HORIZON:
+			if (hint_horizon_cursor_mode(nearMode) < 0)
 				goto exit;
 
 			ev = NULL;
