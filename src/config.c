@@ -76,6 +76,8 @@ static struct {
 	{ "scroll_up", "r", "Scroll up key.", OPT_KEY },
 	{ "scroll_right", "o", "Scroll right key.", OPT_KEY },
 	{ "scroll_left", "i", "Scroll left key.", OPT_KEY },
+	{ "scroll_down_ctrl", "E", "Single scroll down key with ctrl pressed.", OPT_KEY },
+	{ "scroll_up_ctrl", "R", "Single scroll up key with ctrl pressed.", OPT_KEY },
 
 	{ "cursor_color", "#FF4500", "The color of the pointer in normal mode (rgba hex value).", OPT_STRING },
 	{ "cursor_color_crossed", "#000000", "The color of the pointer in normal mode while crossing (rgba hex value).", OPT_STRING },

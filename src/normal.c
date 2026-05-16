@@ -152,6 +152,8 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 		"screen",
 		"scroll_down",
 		"scroll_up",
+		"scroll_down_ctrl",
+		"scroll_up_ctrl",
 		"scroll_right",
 		"scroll_left",
 		"start",
@@ -209,6 +211,20 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 
 		if (!ev)  {
 			goto next;
+		} else if (config_input_match(ev, "scroll_down_ctrl")) {
+			if (ev->pressed) {
+				uint8_t mod = parse_modifiers("C");
+				platform->press_modifier(mod);
+				platform->scroll(SCROLL_DOWN);
+				platform->unpress_modifier(mod);
+			}
+		} else if (config_input_match(ev, "scroll_up_ctrl")) {
+			if (ev->pressed) {
+				uint8_t mod = parse_modifiers("C");
+				platform->press_modifier(mod);
+				platform->scroll(SCROLL_UP);
+				platform->unpress_modifier(mod);
+			}
 		} else if (config_input_match(ev, "scroll_down")) {
 			if (ev->pressed) {
 				scroll_stop();
