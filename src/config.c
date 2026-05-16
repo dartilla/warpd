@@ -54,6 +54,8 @@ static struct {
 	{ "hint_near_top_right", "A-l", "Activate hint near mode (topRight).", OPT_KEY },
 	{ "hint_near_bottom_left", "A-j", "Activate hint near mode (bottomLeft).", OPT_KEY },
 	{ "hint_near_bottom_right", "A-k", "Activate hint near mode (bottomRight).", OPT_KEY },
+	{ "hint_near_vertical_up", "C-k", "Activate hint vertical mode (up).", OPT_KEY },
+	{ "hint_near_vertical_down", "C-j", "Activate hint vertical mode (down).", OPT_KEY },
 	{ "grid", "g", "Activate (g)rid mode while in normal mode.", OPT_KEY },
 	{ "screen", "s", "Activate (s)creen selection while in normal mode.", OPT_KEY },
 
@@ -120,6 +122,7 @@ static struct {
 	{ "hint_near_size", "17", "Hint size (range: 1-1000)", OPT_INT },
 	{ "hint_near_row_count", "3", "Hint row count", OPT_INT },
 	{ "hint_near_column_count", "7", "Hint column count", OPT_INT },
+	{ "hint_near_vertical_row_count", "20", "Hint row count for mode near_vertical", OPT_INT },
 
 	{ "hint_exit", "esc", "The exit key used for hint mode.", OPT_KEY },
 	{ "hint_normal", "C-q", "From hint mode to normal ignoring oneshot.", OPT_KEY },
