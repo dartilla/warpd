@@ -10,22 +10,26 @@ void draw_cross_around_mouse_cursor(screen_t scr, int x, int y, int sw,
 				       int sh, const char *curcol, const int cursz)
 {
 	const int cross_line = cursz * 5;
-	const int left_width = x < cross_line ? x : cross_line;
-	platform->screen_draw_box(scr, 0, y - cursz / 2, left_width, cursz, curcol);
 
-	const int rightX = x > sw - cross_line ? x : sw - cross_line;
+	if (x > 1) {
+		const int left_width = x + cursz + 1 < cross_line ? x : cross_line;
+		platform->screen_draw_box(scr, 0, y - cursz / 2, left_width, cursz, curcol);
+	}
+
+	const int rightX = x + cursz < sw - cross_line ? sw - cross_line : x + cursz + 1 ;
 	platform->screen_draw_box(scr, rightX, y - cursz / 2, cross_line, cursz, curcol);
 
-	const int top_height = y < cross_line ? y : cross_line;
-	platform->screen_draw_box(scr, x + 1, 0, cursz, top_height > 0 ? top_height : 1, curcol);
+	const int top_height = y < cross_line ? y : cross_line - cursz;
+	platform->screen_draw_box(scr, x+1, 0, cursz, top_height > 0 ? top_height : 1, curcol);
 
 	if (y > sh - cross_line) {
 		platform->screen_draw_box(scr, x + 1, y, cursz, sh - y, curcol);
 	} else {
-		platform->screen_draw_box(scr, x + 1, sh - cross_line, cursz, cross_line, curcol);
+		platform->screen_draw_box(scr, x + 1, sh - cross_line, cursz,
+					  cross_line, curcol);
 	}
 
-	if (x < cross_line || x > sw - cross_line ||
+	if (x < cross_line || x + cursz >= sw - cross_line ||
 		y < cross_line || y > sh - cross_line) {
 		const char *crossed_color = config_get("cursor_color_crossed");
 
