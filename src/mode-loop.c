@@ -34,6 +34,13 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			ev = NULL;
 			mode = MODE_NORMAL;
 			break;
+		case MODE_BOOKMARK:
+			if (bookmark_hint_mode() < 0)
+				goto exit;
+
+			ev = NULL;
+			mode = MODE_NORMAL;
+			break;
 		case MODE_HINTSPEC:
 			hintspec_mode();
 			break;
@@ -42,6 +49,8 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 
 			if (config_input_match(ev, "history"))
 				mode = MODE_HISTORY;
+			else if (config_input_match(ev, "bookmark"))
+				mode = MODE_BOOKMARK;
 			else if (config_input_match(ev, "hint"))
 				mode = MODE_HINT;
 			else if (config_input_match(ev, "hint2"))

@@ -47,6 +47,7 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX_HIST_ENTS 16
+#define MAX_BOOKMARK_ENTS 26
 #define MAX_DRAG_ACTIONS 8
 
 #ifdef _MSC_VER
@@ -64,6 +65,7 @@ enum {
 	MODE_HINT_NEAR,
 	MODE_HINT_VERTICAL,
 	MODE_HINT_HORIZON,
+	MODE_BOOKMARK,
 	MODE_GRID,
 	MODE_NORMAL,
 	MODE_HINTSPEC,
@@ -100,12 +102,19 @@ struct histfile_ent {
 	int y;
 };
 
+struct bookmark_ent {
+	char label[16];
+	int x;
+	int y;
+};
+
 
 extern char last_selected_hint[32];
 int is_oneshot_removed();
 void remove_oneshot_flag();
 int hintspec_mode();
 int history_hint_mode();
+int bookmark_hint_mode();
 int hint_near_cursor_mode(int mode);
 int hint_vertical_cursor_mode(int mode);
 int hint_horizon_cursor_mode(int mode);
@@ -155,6 +164,8 @@ void hist_next();
 
 size_t histfile_read(struct histfile_ent **entries);
 void histfile_add(int x, int y);
+
+size_t bookmarkfile_read(const char *path, struct bookmark_ent **entries);
 
 void init_mouse();
 

@@ -48,6 +48,8 @@ static struct {
 	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click).", OPT_BUTTON },
 	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts).", OPT_KEY },
 	{ "history", ";", "Activate hint history mode while in normal mode.", OPT_KEY },
+	{ "bookmark", "b", "Activate bookmark hint mode while in normal mode.", OPT_KEY },
+	{ "bookmarkfile_choose_script", "", "Script that returns the bookmark file path. If empty, uses the default data path.", OPT_STRING },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?).", OPT_KEY },
 	{ "hint2", "X", "Activate two pass hint mode.", OPT_KEY },
 	{ "hint_near_top_left", "A-h", "Activate hint near mode (topLeft).", OPT_KEY },

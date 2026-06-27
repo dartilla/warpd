@@ -7,7 +7,7 @@ static const char *activation_keys[] = {
 	"screen_activation_key",
 	"hint2_activation_key",
 	"hint2_oneshot_key",
-	"history_activation_key",
+	"history_activation_key"
 };
 
 static struct input_event activation_events[sizeof activation_keys / sizeof activation_keys[0]];

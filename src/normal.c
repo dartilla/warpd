@@ -148,6 +148,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 		"hist_back",
 		"hist_forward",
 		"history",
+		"bookmark",
 		"left",
 		"middle",
 		"oneshot_buttons",
@@ -317,6 +318,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 			   config_input_match(ev, "grid") ||
 			   config_input_match(ev, "screen") ||
 			   config_input_match(ev, "history") ||
+			   config_input_match(ev, "bookmark") ||
 			   config_input_match(ev, "hint2") ||
 			   config_input_match(ev, "hint_near_top_left") ||
 			   config_input_match(ev, "hint_near_top_right") ||
@@ -388,6 +390,7 @@ exit:
 		platform->mouse_up(config_get_int("drag_button"));
 	}
 	if (!config_input_match(ev, "history") &&
+	    !config_input_match(ev, "bookmark") &&
 	    !config_input_match(ev, "hint2") &&
 	    !config_input_match(ev, "hint_near_top_left") &&
 	    !config_input_match(ev, "hint_near_top_right") &&

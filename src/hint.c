@@ -518,3 +518,67 @@ int history_hint_mode()
 
 	return hint_selection(scr, hints, n);
 }
+
+static const char *get_bookmark_path()
+{
+	static char buf[PATH_MAX];
+	const char *script = config_get("bookmarkfile_choose_script");
+	FILE *fp;
+	size_t len;
+
+	if (script[0]) {
+		fp = popen(script, "r");
+		if (!fp)
+			return get_data_path("bookmark");
+
+		if (!fgets(buf, sizeof(buf), fp)) {
+			pclose(fp);
+			return get_data_path("bookmark");
+		}
+
+		pclose(fp);
+
+		len = strlen(buf);
+		while (len > 0 && (buf[len-1] == '\n' || buf[len-1] == '\r'))
+			buf[--len] = 0;
+
+		if (len == 0)
+			return get_data_path("bookmark");
+
+		return get_data_path(buf);
+	}
+
+	return get_data_path("bookmark");
+}
+
+int bookmark_hint_mode()
+{
+	struct hint hints[MAX_HINTS];
+	struct bookmark_ent *ents;
+	screen_t scr;
+	int w, h;
+	int sw, sh;
+	size_t n, i;
+	const char *path;
+
+	platform->mouse_get_position(&scr, NULL, NULL);
+	platform->screen_get_dimensions(scr, &sw, &sh);
+
+	path = get_bookmark_path();
+	n = bookmarkfile_read(path, &ents);
+
+	get_hint_size(scr, &w, &h);
+
+	for (i = 0; i < n; i++) {
+		hints[i].w = w;
+		hints[i].h = h;
+
+		hints[i].x = ents[i].x - w/2;
+		hints[i].y = ents[i].y - h/2;
+
+		strncpy(hints[i].label, ents[i].label, sizeof(hints[i].label) - 1);
+		hints[i].label[sizeof(hints[i].label) - 1] = 0;
+	}
+
+	return hint_selection(scr, hints, n);
+}
