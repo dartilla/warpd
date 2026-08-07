@@ -128,6 +128,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 		"accelerator",
 		"bottom",
 		"buttons",
+		"center",
 		"copy_and_exit",
 		"decelerator",
 		"down",
@@ -284,6 +285,11 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 			move(scr, mx, (sh - cursz / 2) - mp , !show_cursor);
 		else if (config_input_match(ev, "middle"))
 			move(scr, mx, sh / 2, !show_cursor);
+		else if (config_input_match(ev, "center")) {
+			pause_active_drag_action(dah);
+			move(scr, sw / 2, sh / 2, !show_cursor);
+			resume_active_drag_action(dah);
+		}
 		else if (config_input_match(ev, "start"))
 			move(scr, 1 + mp, my, !show_cursor);
 		else if (config_input_match(ev, "end"))

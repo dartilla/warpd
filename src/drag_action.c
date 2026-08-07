@@ -57,6 +57,30 @@ void stop_all_drag_actions(struct drag_action_holder *dah)
 	}
 }
 
+void pause_active_drag_action(struct drag_action_holder *dah)
+{
+	for (int i = 0; i < dah->nr; i++) {
+		if (dah->drag_actions[i].is_dragging) {
+			struct drag_action *da = &dah->drag_actions[i];
+			platform->unpress_modifier(parse_modifiers(config_get(da->modifiers_cl)));
+			platform->mouse_up(config_get_int(da->button_cl));
+			return;
+		}
+	}
+}
+
+void resume_active_drag_action(struct drag_action_holder *dah)
+{
+	for (int i = 0; i < dah->nr; i++) {
+		if (dah->drag_actions[i].is_dragging) {
+			struct drag_action *da = &dah->drag_actions[i];
+			platform->press_modifier(parse_modifiers(config_get(da->modifiers_cl)));
+			platform->mouse_down(config_get_int(da->button_cl));
+			return;
+		}
+	}
+}
+
 int handle_drag_action(struct input_event *ev, struct drag_action_holder *dah, screen_t *scr)
 {
 	for (int i = 0; i < dah->nr; i++) {

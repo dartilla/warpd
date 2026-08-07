@@ -28,5 +28,7 @@ extern const char *active_drag_cursor_color;
 void init_drag_action_holder(struct drag_action_holder *dah);
 int handle_drag_action(struct input_event *ev, struct drag_action_holder *dah, screen_t *scr);
 void stop_all_drag_actions(struct drag_action_holder *dah);
+void pause_active_drag_action(struct drag_action_holder *dah);
+void resume_active_drag_action(struct drag_action_holder *dah);
 
 #endif

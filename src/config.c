@@ -70,6 +70,7 @@ static struct {
 	{ "top", "H", "Moves the cursor to the top of the screen in normal mode.", OPT_KEY },
 	{ "middle", "M", "Moves the cursor to the middle of the screen in normal mode.", OPT_KEY },
 	{ "bottom", "L", "Moves the cursor to the bottom of the screen in normal mode.", OPT_KEY },
+	{ "center", "G", "Moves the cursor to the center of the screen in normal mode.", OPT_KEY },
 	{ "start", "0", "Moves the cursor to the leftmost corner of the screen in normal mode.", OPT_KEY },
 	{ "end", "$", "Moves the cursor to the rightmost corner of the screen in normal mode.", OPT_KEY },
 	{ "movement_padding", "100", "Padding for movement (left means leftmost but padding, etc)", OPT_INT },
