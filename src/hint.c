@@ -79,8 +79,17 @@ static void get_hint_size(screen_t scr, int *w, int *h)
 	return get_hint_size_by_key(scr, w, h, "hint_size");
 }
 
+static int is_skip_element(int i, int j, const int single_row_or_column_mode)
+{
+	if (single_row_or_column_mode) {
+		return !(i == 0 && j == 0); // skip first element
+	} else {
+		return !(i == 0 || j == 0); // skip first row and column
+	}
+}
+
 static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
-	int mode, const int row_count, const int column_count)
+	int mode, int row_count, int column_count)
 {
 	int screen_width, screen_height, cursor_x, cursor_y;
 	int hint_width, hint_height;
@@ -118,9 +127,19 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
 	int y = y_offset;
 
 	int k = 0;
+	int single_row_or_column_mode;
+	if (row_count == 1 || column_count == 1) {
+		single_row_or_column_mode = 1;
+	} else {
+		single_row_or_column_mode = 0;
+		// to move elements next row/columns
+		column_count = column_count + 1;
+		row_count = row_count + 1;
+	}
+
 	for (i = 0; i < column_count; i++) {
 		for (j = 0; j < row_count; j++) {
-			if (!(i == 0 && j == 0)) {
+			if (is_skip_element(i, j, single_row_or_column_mode)) {
 				struct hint *hint = &hints[n++];
 
 				hint->x = x;
