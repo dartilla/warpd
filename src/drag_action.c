@@ -44,8 +44,9 @@ static void stop_other_drag_actions(struct drag_action_holder *dah, int skip_pos
 	}
 }
 
-void stop_all_drag_actions(struct drag_action_holder *dah)
+void stop_all_drag_actions(struct drag_action_holder *dah, screen_t *scr)
 {
+	int had_active = 0;
 	active_drag_cursor_color = NULL;
 	for (int i = 0; i < dah->nr; i++) {
 		if (dah->drag_actions[i].is_dragging) {
@@ -53,7 +54,14 @@ void stop_all_drag_actions(struct drag_action_holder *dah)
 			da->is_dragging = 0;
 			platform->unpress_modifier(parse_modifiers(config_get(da->modifiers_cl)));
 			platform->mouse_up(config_get_int(da->button_cl));
+			had_active = 1;
 		}
+	}
+	if (had_active && scr) {
+		int mx, my;
+		platform->mouse_get_position(scr, &mx, &my);
+		hist_add(mx, my);
+		histfile_add(mx, my);
 	}
 }
 

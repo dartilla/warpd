@@ -351,12 +351,12 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, struc
 				hist_add(mx, my);
 				histfile_add(mx, my);
 				platform->mouse_click(btn);
-				stop_all_drag_actions(dah);
+				stop_all_drag_actions(dah, &scr);
 				draw_cursor_current(scr);
 			} else if ((btn = config_input_match(ev, "oneshot_buttons"))) {
 				hist_add(mx, my);
 				platform->mouse_click(btn);
-				stop_all_drag_actions(dah);
+				stop_all_drag_actions(dah, &scr);
 				draw_cursor_current(scr);
 
 				const int timeout = config_get_int("oneshot_timeout");
@@ -407,7 +407,7 @@ exit:
 	    !config_input_match(ev, "hint_near_horizon_left") &&
 	    !config_input_match(ev, "hint_near_horizon_right") &&
 	    !config_input_match(ev, "hint")) {
-		stop_all_drag_actions(dah);
+		stop_all_drag_actions(dah, &scr);
 	}
 
 	platform->commit();
