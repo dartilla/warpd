@@ -89,17 +89,65 @@ static void get_hint_size(screen_t scr, int *w, int *h)
 	return get_hint_size_by_key(scr, w, h, "hint_size");
 }
 
-static int is_skip_element(int i, int j, const int single_row_or_column_mode)
+static int is_skip_element(int i, int j, const int single_row_or_column_mode,
+	const int alignToScreenEdge)
 {
+	if (alignToScreenEdge) {
+		return 0; // do not skip
+	}
+
 	if (single_row_or_column_mode) {
-		return !(i == 0 && j == 0); // skip first element
+		return (i == 0 && j == 0); // skip first element
 	} else {
-		return !(i == 0 || j == 0); // skip first row and column
+		return (i == 0 || j == 0); // skip first row and column
 	}
 }
 
+static int checkAlignScreenEdgeForbidden(int row_count, int column_count,
+					   int cursor_x, int cursor_y,
+					   int hint_width,
+					   int hint_height, const int colGap,
+					   const int rowGap, int x_offset,
+					   int y_offset, int directionX,
+					   int directionY, int alignVertical)
+{
+	int i, j;
+	int isAlignToScreenEdgeForbidden = 0;
+	int x = x_offset;
+	int y = y_offset;
+
+	for (i = 0; i < column_count; i++) {
+		for (j = 0; j < row_count; j++) {
+			if (directionY > 0) {
+				y += rowGap + hint_height;
+			} else {
+				y -= rowGap + hint_height;
+			}
+		}
+		if (directionX > 0) {
+			x += colGap + hint_width;
+		} else {
+			x -= colGap + hint_width;
+		}
+	}
+	if (alignVertical) {
+		if (directionY > 0) {
+			isAlignToScreenEdgeForbidden = cursor_y < y;
+		} else if (directionY < 0) {
+			isAlignToScreenEdgeForbidden = cursor_y > y;
+		}
+	} else {
+		if (directionX > 0) {
+			isAlignToScreenEdgeForbidden = cursor_x < x;
+		} else if (directionX < 0) {
+			isAlignToScreenEdgeForbidden = cursor_x > x;
+		}
+	}
+	return isAlignToScreenEdgeForbidden;
+}
+
 static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
-	int mode, int row_count, int column_count)
+	int mode, int row_count, int column_count, int alignScreenEdge)
 {
 	int screen_width, screen_height, cursor_x, cursor_y;
 	int hint_width, hint_height;
@@ -133,6 +181,56 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
 		directionX = -1;
 	}
 
+	if (alignScreenEdge) {
+		const int x_offset_bak = x_offset;
+		const int y_offset_bak = y_offset;
+		const int directionX_bak = directionX;
+		const int directionY_bak = directionY;
+		const int column_count_bak = column_count;
+		const int row_count_bak = row_count;
+
+		const int alignVertical = (column_count == 1);
+
+		if (alignVertical) {
+			if (mode == TOP_LEFT || mode == TOP_RIGHT) {
+				// max top position
+				y_offset = 0;
+				directionY = 1;
+			} else {
+				// max bottom position
+				y_offset = screen_height - hint_height;
+				directionY = -1;
+			}
+			row_count--;
+		} else {
+			if (mode == TOP_RIGHT || mode == BOTTOM_RIGHT) {
+				// max right position
+				x_offset = screen_width - hint_width;
+				directionX = -1;
+			} else {
+				// max left position
+				x_offset = 0;
+				directionX = 1;
+			}
+			column_count--;
+		}
+
+		const int isAlignScreenEdgeForbidden = checkAlignScreenEdgeForbidden(
+		    row_count, column_count, cursor_x, cursor_y, hint_width,
+		    hint_height, colGap, rowGap, x_offset, y_offset, directionX,
+		    directionY, alignVertical);
+
+		if (isAlignScreenEdgeForbidden) {
+			x_offset = x_offset_bak;
+			y_offset = y_offset_bak;
+			directionX = directionX_bak;
+			directionY = directionY_bak;
+			column_count = column_count_bak;
+			row_count = row_count_bak;
+			alignScreenEdge = 0;
+		}
+	}
+
 	int x = x_offset;
 	int y = y_offset;
 
@@ -147,9 +245,11 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
 		row_count = row_count + 1;
 	}
 
+	// total_count used with alignScreenEdge, so it is column_count or row_count
+	int total_count = column_count * row_count;
 	for (i = 0; i < column_count; i++) {
 		for (j = 0; j < row_count; j++) {
-			if (is_skip_element(i, j, single_row_or_column_mode)) {
+			if (!is_skip_element(i, j, single_row_or_column_mode, alignScreenEdge)) {
 				struct hint *hint = &hints[n++];
 
 				hint->x = x;
@@ -158,7 +258,8 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
 				hint->w = hint_width;
 				hint->h = hint_height;
 
-				hint->label[0] = uppercase_hint_char(chars[k]);
+				int label_k = (alignScreenEdge) ? (total_count - 1 - k) : k;
+				hint->label[0] = uppercase_hint_char(chars[label_k]);
 				hint->label[1] = 0;
 				hint->label[2] = 0;
 				k++;
@@ -256,8 +357,12 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		"hint_near_bottom_right",
 		"hint_near_vertical_up",
 		"hint_near_vertical_down",
+		"hint_near_vertical_up_align_screen_edge",
+		"hint_near_vertical_down_align_screen_edge",
 		"hint_near_horizon_left",
-		"hint_near_horizon_right"
+		"hint_near_horizon_left_align_screen_edge",
+		"hint_near_horizon_right",
+		"hint_near_horizon_right_align_screen_edge"
 	};
 
 	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
@@ -294,19 +399,35 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 			break;
 		} else if (config_input_match(ev, "hint_near_vertical_up")) {
 			platform->screen_clear(scr);
-			rc = hint_vertical_cursor_mode(TOP_LEFT);
+			rc = hint_vertical_cursor_mode(TOP_LEFT, 0);
 			break;
 		} else if (config_input_match(ev, "hint_near_vertical_down")) {
 			platform->screen_clear(scr);
-			rc = hint_vertical_cursor_mode(BOTTOM_LEFT);
+			rc = hint_vertical_cursor_mode(BOTTOM_LEFT, 0);
+			break;
+		} else if (config_input_match(ev, "hint_near_vertical_up_align_screen_edge")) {
+			platform->screen_clear(scr);
+			rc = hint_vertical_cursor_mode(TOP_LEFT, 1);
+			break;
+		} else if (config_input_match(ev, "hint_near_vertical_down_align_screen_edge")) {
+			platform->screen_clear(scr);
+			rc = hint_vertical_cursor_mode(BOTTOM_LEFT, 1);
 			break;
 		} else if (config_input_match(ev, "hint_near_horizon_left")) {
 			platform->screen_clear(scr);
-			rc = hint_horizon_cursor_mode(TOP_LEFT);
+			rc = hint_horizon_cursor_mode(TOP_LEFT, 0);
+			break;
+		} else if (config_input_match(ev, "hint_near_horizon_left_align_screen_edge")) {
+			platform->screen_clear(scr);
+			rc = hint_horizon_cursor_mode(TOP_LEFT, 1);
 			break;
 		} else if (config_input_match(ev, "hint_near_horizon_right")) {
 			platform->screen_clear(scr);
-			rc = hint_horizon_cursor_mode(TOP_RIGHT);
+			rc = hint_horizon_cursor_mode(TOP_RIGHT, 0);
+			break;
+		} else if (config_input_match(ev, "hint_near_horizon_right_align_screen_edge")) {
+			platform->screen_clear(scr);
+			rc = hint_horizon_cursor_mode(TOP_RIGHT, 1);
 			break;
 		} else if (config_input_match(ev, "hint_normal")) {
 			remove_oneshot_flag();
@@ -467,7 +588,7 @@ int full_hint_mode(int second_pass)
 		return 0;
 }
 
-int hint_near_cursor_mode_full(int mode, int row_count, int column_count)
+int hint_near_cursor_mode_full(int mode, int row_count, int column_count, int alignScreenEdge)
 {
 	int mx, my;
 	screen_t scr;
@@ -476,7 +597,7 @@ int hint_near_cursor_mode_full(int mode, int row_count, int column_count)
 	platform->mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
-	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count);
+	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count, alignScreenEdge);
 
 	if (hint_selection(scr, hints, nr_hints))
 		return -1;
@@ -488,20 +609,19 @@ int hint_near_cursor_mode(int mode)
 {
 	return hint_near_cursor_mode_full(mode,
 		config_get_int("hint_near_row_count"),
-		config_get_int("hint_near_column_count"));
+		config_get_int("hint_near_column_count"), 0);
 }
 
-int hint_vertical_cursor_mode(int mode)
+int hint_vertical_cursor_mode(int mode, int alignScreenEdge)
 {
 	return hint_near_cursor_mode_full(mode,
-		config_get_int("hint_near_vertical_row_count"), 1);
+		config_get_int("hint_near_vertical_row_count"), 1, alignScreenEdge);
 }
 
-int hint_horizon_cursor_mode(int mode)
+int hint_horizon_cursor_mode(int mode, int alignScreenEdge)
 {
 	return hint_near_cursor_mode_full(mode, 1,
-
-		config_get_int("hint_near_horizon_column_count"));
+		config_get_int("hint_near_horizon_column_count"), alignScreenEdge);
 }
 
 int history_hint_mode()

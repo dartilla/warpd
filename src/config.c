@@ -58,8 +58,12 @@ static struct {
 	{ "hint_near_bottom_right", "A-k", "Activate hint near mode (bottomRight).", OPT_KEY },
 	{ "hint_near_vertical_up", "C-k", "Activate hint vertical mode (up).", OPT_KEY },
 	{ "hint_near_vertical_down", "C-j", "Activate hint vertical mode (down).", OPT_KEY },
+	{ "hint_near_vertical_up_align_screen_edge", "C-K", "Activate hint vertical mode (up, first hint at max top).", OPT_KEY },
+	{ "hint_near_vertical_down_align_screen_edge", "C-J", "Activate hint vertical mode (down, first hint at max bottom).", OPT_KEY },
 	{ "hint_near_horizon_left", "C-h", "Activate hint horizon mode (left).", OPT_KEY },
+	{ "hint_near_horizon_left_align_screen_edge", "C-H", "Activate hint horizon mode (left, first hint at max left).", OPT_KEY },
 	{ "hint_near_horizon_right", "C-l", "Activate hint vertical mode (right).", OPT_KEY },
+	{ "hint_near_horizon_right_align_screen_edge", "C-L", "Activate hint horizon mode (right, first hint at max right).", OPT_KEY },
 	{ "grid", "g", "Activate (g)rid mode while in normal mode.", OPT_KEY },
 	{ "screen", "s", "Activate (s)creen selection while in normal mode.", OPT_KEY },
 

@@ -64,7 +64,9 @@ enum {
 	MODE_HINT2,
 	MODE_HINT_NEAR,
 	MODE_HINT_VERTICAL,
+	MODE_HINT_VERTICAL_ALIGN_SCREEN_EDGE,
 	MODE_HINT_HORIZON,
+	MODE_HINT_HORIZON_ALIGN_SCREEN_EDGE,
 	MODE_BOOKMARK,
 	MODE_GRID,
 	MODE_NORMAL,
@@ -88,7 +90,7 @@ enum option_type {
 };
 
 struct config_entry {
-	char key[32];
+	char key[64];
 	char value[64];
 	enum option_type type;
 
@@ -116,8 +118,10 @@ int hintspec_mode();
 int history_hint_mode();
 int bookmark_hint_mode();
 int hint_near_cursor_mode(int mode);
-int hint_vertical_cursor_mode(int mode);
-int hint_horizon_cursor_mode(int mode);
+int hint_near_cursor_mode_full(int mode, int row_count, int column_count, int alignScreenEdge);
+int hint_vertical_cursor_mode(int mode, int alignScreenEdge);
+int hint_horizon_cursor_mode(int mode, int alignScreenEdge);
+int hint_horizon_cursor_mode_align_screen_edge(int mode);
 int full_hint_mode(int second_pass);
 void screen_selection_mode();
 struct input_event *grid_mode();
