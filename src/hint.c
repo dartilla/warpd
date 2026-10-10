@@ -21,6 +21,16 @@ int is_hint_overrides_cursor(struct hint hint, int x, int y)
 		&& hint.y < y && hint.y + hint.h > y;
 }
 
+static char uppercase_hint_char(char c)
+{
+	const char *exclude = config_get("hint_chars_uppercase_exclude");
+
+	if (config_get_int("hint_chars_uppercase") && !strchr(exclude, c))
+		return toupper((unsigned char)c);
+
+	return c;
+}
+
 static void filter(screen_t scr, const char *s)
 {
 	size_t i;
@@ -31,7 +41,7 @@ static void filter(screen_t scr, const char *s)
 	if (config_get_int("hint_chars_uppercase")) {
 		upper = strdup(s);
 		for (int j = 0; upper[j]; j++) {
-			upper[j] = toupper((unsigned char)upper[j]);
+			upper[j] = uppercase_hint_char(upper[j]);
 		}
 		key = upper;
 	}
@@ -148,11 +158,7 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
 				hint->w = hint_width;
 				hint->h = hint_height;
 
-				if (config_get_int("hint_chars_uppercase")) {
-					hint->label[0] = toupper(chars[k]);
-				} else {
-					hint->label[0] = chars[k];
-				}
+				hint->label[0] = uppercase_hint_char(chars[k]);
 				hint->label[1] = 0;
 				hint->label[2] = 0;
 				k++;
@@ -212,13 +218,8 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 			hint->w = w;
 			hint->h = h;
 
-			if (config_get_int("hint_chars_uppercase")) {
-				hint->label[0] = toupper(chars[i]);
-				hint->label[1] = toupper(chars[j]);
-			} else {
-				hint->label[0] = chars[i];
-				hint->label[1] = chars[j];
-			}
+			hint->label[0] = uppercase_hint_char(chars[i]);
+			hint->label[1] = uppercase_hint_char(chars[j]);
 			hint->label[2] = 0;
 
 			y += rowgap + h;
@@ -499,6 +500,7 @@ int hint_vertical_cursor_mode(int mode)
 int hint_horizon_cursor_mode(int mode)
 {
 	return hint_near_cursor_mode_full(mode, 1,
+
 		config_get_int("hint_near_horizon_column_count"));
 }
 
@@ -525,12 +527,7 @@ int history_hint_mode()
 		hints[i].x = ents[i].x - w/2;
 		hints[i].y = ents[i].y - h/2;
 
-		hints[i].label[0] = 'a'+i;
-		if (config_get_int("hint_chars_uppercase")) {
-			hints[i].label[0] = toupper('a'+i);
-		} else {
-			hints[i].label[0] = 'a'+i;
-		}
+		hints[i].label[0] = uppercase_hint_char('a'+i);
 
 		hints[i].label[1] = 0;
 	}
