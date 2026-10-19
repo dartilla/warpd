@@ -21,17 +21,18 @@ int is_hint_overrides_cursor(struct hint hint, int x, int y)
 		&& hint.y < y && hint.y + hint.h > y;
 }
 
-static char uppercase_hint_char(char c)
+static char uppercase_hint_char(char c, int no_uppercase_exclusion)
 {
 	const char *exclude = config_get("hint_chars_uppercase_exclude");
 
-	if (config_get_int("hint_chars_uppercase") && !strchr(exclude, c))
+	if (config_get_int("hint_chars_uppercase")
+		&& (no_uppercase_exclusion || !strchr(exclude, c)))
 		return toupper((unsigned char)c);
 
 	return c;
 }
 
-static void filter(screen_t scr, const char *s)
+static void filter(screen_t scr, const char *s, int no_uppercase_exclusion)
 {
 	size_t i;
 
@@ -41,7 +42,7 @@ static void filter(screen_t scr, const char *s)
 	if (config_get_int("hint_chars_uppercase")) {
 		upper = strdup(s);
 		for (int j = 0; upper[j]; j++) {
-			upper[j] = uppercase_hint_char(upper[j]);
+			upper[j] = uppercase_hint_char(upper[j], no_uppercase_exclusion);
 		}
 		key = upper;
 	}
@@ -259,7 +260,7 @@ static size_t generate_hints_near_cursor(screen_t scr, struct hint *hints,
 				hint->h = hint_height;
 
 				int label_k = (alignScreenEdge) ? (total_count - 1 - k) : k;
-				hint->label[0] = uppercase_hint_char(chars[label_k]);
+				hint->label[0] = uppercase_hint_char(chars[label_k], 0);
 				hint->label[1] = 0;
 				hint->label[2] = 0;
 				k++;
@@ -319,8 +320,8 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 			hint->w = w;
 			hint->h = h;
 
-			hint->label[0] = uppercase_hint_char(chars[i]);
-			hint->label[1] = uppercase_hint_char(chars[j]);
+			hint->label[0] = uppercase_hint_char(chars[i], 0);
+			hint->label[1] = uppercase_hint_char(chars[j], 0);
 			hint->label[2] = 0;
 
 			y += rowgap + h;
@@ -333,12 +334,13 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 	return n;
 }
 
-static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
+static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints,
+	int no_uppercase_exclusion)
 {
 	hints = _hints;
 	nr_hints = _nr_hints;
 
-	filter(scr, "");
+	filter(scr, "", no_uppercase_exclusion);
 
 	int rc = 0;
 	char buf[32] = {0};
@@ -447,7 +449,7 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 			buf[len++] = name[0];
 		}
 
-		filter(scr, buf);
+		filter(scr, buf, no_uppercase_exclusion);
 
 		if (nr_matched == 1) {
 			int nx, ny;
@@ -527,7 +529,7 @@ static int sift()
 			}
 	}
 
-	return hint_selection(scr, hints, n);
+	return hint_selection(scr, hints, n, 0);
 }
 
 void init_hints()
@@ -565,7 +567,7 @@ int hintspec_mode()
 		n++;
 	}
 
-	return hint_selection(scr, hints, n);
+	return hint_selection(scr, hints, n, 0);
 }
 
 int full_hint_mode(int second_pass)
@@ -579,7 +581,7 @@ int full_hint_mode(int second_pass)
 
 	nr_hints = generate_fullscreen_hints(scr, hints);
 
-	if (hint_selection(scr, hints, nr_hints))
+	if (hint_selection(scr, hints, nr_hints, 0))
 		return -1;
 
 	if (second_pass)
@@ -599,7 +601,7 @@ int hint_near_cursor_mode_full(int mode, int row_count, int column_count, int al
 
 	nr_hints = generate_hints_near_cursor(scr, hints, mode, row_count, column_count, alignScreenEdge);
 
-	if (hint_selection(scr, hints, nr_hints))
+	if (hint_selection(scr, hints, nr_hints, 0))
 		return -1;
 
 	return 0;
@@ -647,12 +649,12 @@ int history_hint_mode()
 		hints[i].x = ents[i].x - w/2;
 		hints[i].y = ents[i].y - h/2;
 
-		hints[i].label[0] = uppercase_hint_char('a'+i);
+		hints[i].label[0] = uppercase_hint_char('a'+i, 0);
 
 		hints[i].label[1] = 0;
 	}
 
-	return hint_selection(scr, hints, n);
+	return hint_selection(scr, hints, n, 0);
 }
 
 static const char *get_bookmark_path()
@@ -716,5 +718,5 @@ int bookmark_hint_mode()
 		hints[i].label[sizeof(hints[i].label) - 1] = 0;
 	}
 
-	return hint_selection(scr, hints, n);
+	return hint_selection(scr, hints, n, 1);
 }
